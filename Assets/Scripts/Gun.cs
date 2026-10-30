@@ -11,93 +11,129 @@ public class Gun : MonoBehaviour
         Realoding,
     }
 
-    public State CurrentState { get; private set; }
+    [Header("References")]
+    [SerializeField] private Transform fireTransform;
+    [SerializeField] private ParticleSystem muzzleFlashEffect;
+    [SerializeField] private GunData gunData;
 
-    public Transform fireTransform;
+    [Header("Shooting")]
+    [SerializeField] private LayerMask targetLayer;
+    [SerializeField] private float fireDistance = 50f;
 
-    public ParticleSystem muzzleFlashEffect;
     private LineRenderer bulletLineRenderer;
-
-    public GunData gunData;
-
-    public LayerMask targetLayer;
-
-    private float fireDistance = 50f;
 
     private int ammoRemain;
     private int magAmmo;
-
     private float lastFireTime;
 
+    public State CurrentState { get; private set; }
+
     private void Awake()
-    {   
+    {
         bulletLineRenderer = GetComponent<LineRenderer>();
+
         bulletLineRenderer.positionCount = 2;
         bulletLineRenderer.enabled = false;
     }
 
-        private void OnEnable()
+    private void OnEnable()
+    {
+        InitializeGun();
+    }
+
+    private void InitializeGun()
     {
         ammoRemain = gunData.StartAmmoRemain;
         magAmmo = gunData.MagCapacity;
-        //uiManager.SetAmmoText(magAmmo, ammoRemain);
 
-        CurrentState = State.Ready;
         lastFireTime = 0f;
+        CurrentState = State.Ready;
+
+        // uiManager.SetAmmoText(magAmmo, ammoRemain);
     }
 
-      public void Fire()
+    public void Fire()
     {
-        if (CurrentState == State.Ready && Time.time >= lastFireTime + gunData.TimeBetFire)
-        {
-            lastFireTime = Time.time;
-            Shoot();
-        }
+        if (!CanFire())
+            return;
+
+        lastFireTime = Time.time;
+
+        Shoot();
+    }
+
+    private bool CanFire()
+    {
+        return
+            CurrentState == State.Ready &&
+            Time.time >= lastFireTime + gunData.TimeBetFire;
     }
 
     private void Shoot()
     {
-        Vector3 hitPosition;
+        Vector3 hitPosition =
+            GetHitPosition();
 
-        Ray ray = new Ray(fireTransform.position, fireTransform.forward);
-        if (Physics.Raycast(ray, out RaycastHit hit, fireDistance, targetLayer))
-        {
-            hitPosition = hit.point;
-
-            // IDamageable target = hit.collider.GetComponent<IDamageable>();
-            // if (target != null)
-            // {
-            //     target.OnDamage(gunData.damage, hit.point, hit.normal);
-            // }
-        }
-        else
-        {
-            hitPosition = fireTransform.position + fireTransform.forward * fireDistance;
-        }
+        magAmmo--;
 
         StartCoroutine(CoShotEffect(hitPosition));
 
-        magAmmo--;
-        //uiManager.SetAmmoText(magAmmo, ammoRemain);
-
-        if (magAmmo == 0)
+        if (magAmmo <= 0)
         {
             CurrentState = State.Empty;
         }
+
+        // uiManager.SetAmmoText(magAmmo, ammoRemain);
     }
 
-        private IEnumerator CoShotEffect(Vector3 hitPosition)
+    private Vector3 GetHitPosition()
+    {
+        Ray ray =
+            new Ray(
+                fireTransform.position,
+                fireTransform.forward);
+
+        if (Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            fireDistance,
+            targetLayer))
+        {
+            // IDamageable target =
+            //     hit.collider.GetComponent<IDamageable>();
+            //
+            // if (target != null)
+            // {
+            //     target.OnDamage(
+            //         gunData.Damage,
+            //         hit.point,
+            //         hit.normal);
+            // }
+
+            return hit.point;
+        }
+
+        return
+            fireTransform.position +
+            fireTransform.forward * fireDistance;
+    }
+
+    private IEnumerator CoShotEffect(Vector3 hitPosition)
     {
         muzzleFlashEffect.Play();
-        // shellEjectEffect.Play();
-        // gunAudioPlayer.PlayOneShot(gunData.shotClip);
 
-        bulletLineRenderer.SetPosition(0, fireTransform.position);
-        bulletLineRenderer.SetPosition(1, hitPosition);
+        bulletLineRenderer.SetPosition(
+            0,
+            fireTransform.position);
+
+        bulletLineRenderer.SetPosition(
+            1,
+            hitPosition);
+
         bulletLineRenderer.enabled = true;
+
         yield return new WaitForSeconds(0.01f);
 
         bulletLineRenderer.enabled = false;
     }
-
 }

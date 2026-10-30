@@ -2,17 +2,23 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    [Header("References")]
     [SerializeField] private Transform player;
     [SerializeField] private PlayerInput playerInput;
 
-    [SerializeField] public float minX;
-    [SerializeField] public float maxX;
-    [SerializeField] public float minZ;
-    [SerializeField] public float maxZ;
+    [Header("Aim Offset")]
+    [SerializeField] private float aimOffsetRatio = 0.3f;
+    [SerializeField] private float maxAimOffset = 3f;
+
+    [Header("Camera Bounds")]
+    [SerializeField] private float minX;
+    [SerializeField] private float maxX;
+    [SerializeField] private float minZ;
+    [SerializeField] private float maxZ;
 
 
     private Vector3 offsetPosition;
-    private Vector3 offsetAimPosition;
+
 
     // private float startTimer;
     // private bool isStart;
@@ -20,30 +26,31 @@ public class CameraController : MonoBehaviour
 
     private void Awake()
     {
-        offsetPosition = transform.position - player.position;
-    }
-
-
-    private void Update()
-    {    
-
+        offsetPosition =
+            transform.position - player.position;
     }
 
 
     private void LateUpdate()
     {
-        offsetAimPosition =
-            Vector3.ClampMagnitude(playerInput.aimVector * 0.3f, 3f);
+        Vector3 aimOffset =
+            Vector3.ClampMagnitude(
+                playerInput.AimVector * aimOffsetRatio,
+                maxAimOffset);
 
-        Vector3 CameraPosition =
-            player.position + offsetPosition + offsetAimPosition;
+        Vector3 cameraPosition =
+            player.position +
+            offsetPosition +
+            aimOffset;
 
+        cameraPosition.x =
+            Mathf.Clamp(cameraPosition.x, minX, maxX);
 
+        cameraPosition.z =
+            Mathf.Clamp(cameraPosition.z, minZ, maxZ);
 
-        CameraPosition.x = Mathf.Clamp(CameraPosition.x, minX, maxX);
-        CameraPosition.z = Mathf.Clamp(CameraPosition.z, minZ, maxZ);
-        transform.position = CameraPosition;
-
+        transform.position =
+            cameraPosition;
     }
 
     // private void StartOffset()
