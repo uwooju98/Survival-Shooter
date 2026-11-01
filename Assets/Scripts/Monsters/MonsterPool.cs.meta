@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0ec941f0e7a8c474c9dd42fc8aaf4a38
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - normalMonsterPrefab: {fileID: 5374157582099245021, guid: d8931c7642e26d84c9a2da6657880ad1, type: 3}
+  - fastMonsterPrefab: {fileID: 2834816897229353988, guid: 2d85a9c5b64916844a67f91a07f1dfe8, type: 3}
+  - heavyMonsterPrefab: {fileID: 681589295524869754, guid: 2f2be9863c6612e47bb460da8bdd67af, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
